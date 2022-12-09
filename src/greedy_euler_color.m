@@ -35,8 +35,7 @@ function IsEdgeColored(G)
 end function;
 
 function EulerPartition(G)
-  GCopy := G;
-  N := #VertexSet(GCopy);
+  N := #VertexSet(G);
   G1 := EmptyGraph(N);
   G2 := EmptyGraph(N);
   E := EdgeSet(G);
@@ -79,19 +78,15 @@ function EulerPartition(G)
       v1 := vs[1];
       v2 := vs[2];
       if flag eq 1 then
-        // Include(~E1,e);
         AddEdge(~G1, v1, v2);
         flag := 2;
       else
-        // Include(~E2,e);
         AddEdge(~G2, v1, v2);
         flag := 1;
       end if;
     end for; 
   end while;  
 
-  // G1 := sub<GCopy | E1>;
-  // G2 := sub<GCopy | E2>;
   return G1,G2;
 end function;
 
