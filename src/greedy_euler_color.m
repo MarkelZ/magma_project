@@ -5,8 +5,40 @@ procedure PrintGraphLabels(G)
   end for;
 end procedure;
 
+// Determine whether graph G is edge colored.
+function IsEdgeColored(G)
+  for v in VertexSet(G) do
+    // Get list of labels of edges of v
+    labels := [];
+    for e in IncidentEdges(v) do
+      // If an edge is unlabelled return false and print warning msg
+      if not IsLabelled(e) then
+        print("Edge not labelled!");
+        print(e);
+        return false;
+      end if;
+
+      Append(~labels, Label(e));
+    end for;
+
+    // If there are any repeated colors return false
+    labels := Sort(labels);
+    for i := 1 to #labels - 1 by 1 do
+      if labels[i] eq labels[i + 1] then
+        return false;
+      end if;
+    end for;
+  end for;
+
+  // If no colors repeat return true
+  return true;
+end function;
+
 function EulerPartition(G)
   GCopy := G;
+  N := #VertexSet(GCopy);
+  G1 := EmptyGraph(N);
+  G2 := EmptyGraph(N);
   E := EdgeSet(G);
   E1 := {}; 
   E2 := {};
@@ -43,25 +75,28 @@ function EulerPartition(G)
       v2 := VertexSet(G) ! Index(v2);
     end while;
     for e in walk do
+      vs := Setseq(EndVertices(e));
+      v1 := vs[1];
+      v2 := vs[2];
       if flag eq 1 then
-        Include(~E1,e);
+        // Include(~E1,e);
+        AddEdge(~G1, v1, v2);
         flag := 2;
       else
-        Include(~E2,e);
+        // Include(~E2,e);
+        AddEdge(~G2, v1, v2);
         flag := 1;
       end if;
     end for; 
   end while;  
-  G1 := sub<GCopy | E1>;
-  G2 := sub<GCopy | E2>;
+
+  // G1 := sub<GCopy | E1>;
+  // G2 := sub<GCopy | E2>;
   return G1,G2;
 end function;
 
 
 function GreedyEulerColorRec(G, d, Colors)
-  print("BEGIN start of recursive call");
-  G,Colors;
-  print("END start of recursive call");
   // Base case
   if d le 1 then
       color := Colors[1];
@@ -122,6 +157,8 @@ function GreedyEulerColorRec(G, d, Colors)
   // Repair
   for e in EdgeSet(G) do
     if not IsLabelled(e) then
+      print("Repairing edge: ");
+      print(e);
       vs := Setseq(EndVertices(e));
       v1 := vs[1];
       cols1 := [];
@@ -148,26 +185,38 @@ function GreedyEulerColorRec(G, d, Colors)
     end if;
   end for;
 
-  // Debug print
-  print("BEGIN End of recursive call");
-  print("END End of recursive call");
-  PrintGraphLabels(G);
-
   return G;
 end function;
 
 
 function GreedyEulerColor(G)
   d := Maxdeg(G);
-  return GreedyEulerColorRec(G, d, [1..2*d-1 ]);
+  return GreedyEulerColorRec(G, d, [1..2*d-1]);
+end function;
+
+// Test1
+G0 := CompleteGraph(4);
+G0_col := GreedyEulerColor(G0);
+assert IsEdgeColored(G0_col);
+
+// Test2
+
+function TestRandomGraphs(nvertices, ntests)
+  for i := 1 to ntests do
+    GR := RandomGraph(nvertices, 0.75);
+    GR_col := GreedyEulerColor(GR);
+    if not IsEdgeColored(G0_col) then
+      return false, GR_col;
+    end if;
+  end for;
+  return true, EmptyGraph(0);
 end function;
 
 
-// Tests
-procedure TestGreedyEulerColor()
-  G0 := CompleteGraph(4);
-  G0_col := GreedyEulerColor(G0);
-  
-  GR := RandomGraph(4, 0.5);
-  GR_col := GreedyEulerColor(GR);
-end procedure;
+succ, GERR := TestRandomGraphs(16, 100);
+if succ then
+  print("All tests successful!");
+else
+  print("Graph colored wrong");
+  print(GERR);
+end if;
