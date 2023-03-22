@@ -34,6 +34,20 @@ function IsEdgeColored(G)
   return true;
 end function;
 
+// Calculate missing colors at vertex
+// This should be stored, not always calculated
+// Assumes d+1 colors
+function M(G,d,v) 
+  E := IncidentEdges(v);
+  Mv := {1..d+1};
+  for e in E do
+    if IsLabelled(e) then
+      Exclude(~Mv, Label(e));
+    end if;
+  end for;
+  return Mv;
+end function;
+
 function EulerPartition(G)
   N := #VertexSet(G);
   G1 := EmptyGraph(N);
@@ -122,7 +136,6 @@ function GreedyEulerColorRec(G, d, Colors)
     AssignLabel(~G,e,Label(e));
   end for;
 
-  // Prune
   Colors0 := Sort(EdgeLabels(G));
   Colors := [];
 
@@ -207,6 +220,58 @@ function TestRandomGraphs(nvertices, ntests)
   return true, EmptyGraph(0);
 end function;
 
+
+function MakePrimedFan(G,v,x0,alpha)
+  F := <alpha,v,x0>;
+  k := 0;
+  primedF := false;
+  
+  while not primedF do
+    beta := Random(M(F[3+k]));
+    if beta in M(v) then
+      Append(~F, beta);
+      primedF := true;
+    else 
+      e := Random({e : e in IncidentEdges(v) | IsLabelled(e) and Label(e) eq beta});
+      xkplus1 := Random(Exclude(EndVertices(e), v));
+      if exists{i : i in [2 .. 2+k] | F[i] eq xkplus1} then
+        Append(~F, beta);
+        primedF := true;
+      else 
+        Append(~F,xkplus1);
+        k := k+1;
+      end if;
+    end if;
+  end while;
+
+  return F;
+
+end function;
+
+
+function ActivateCFan(G,d,F)
+  
+end function;
+
+function ColorOne(G, d)
+  // choose uncolored edge vx_0
+  uncoloredEdge := 0;
+  for e in EdgeSet(G) do
+    if not IsLabelled(e) then
+      uncoloredEdge = e;
+      break;
+    end if;
+  end for;
+
+  v := InitialVertex(e);
+  x0 := TerminalVertex(e);
+  // Choose any \alpha \in M(v)
+  alpha := Random(M(v));
+
+  F := MakePrimedFan(G,v,x0,\alpha)
+
+  // ActivateCFan(F)
+end function;
 
 succ, GERR := TestRandomGraphs(16, 100);
 if succ then
