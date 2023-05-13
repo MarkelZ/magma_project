@@ -38,6 +38,12 @@ function IsEdgeColored(G)
   return true;
 end function;
 
+// Compute the number of colours used.
+function NumberOfColours(G) 
+  Colors := { Label(e) : e in EdgeSet(G) };
+  return #Colors;
+end function;
+
 // Calculate missing colors at vertex
 // This should be stored, not always calculated
 // Assumes d+1 colors

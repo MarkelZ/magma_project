@@ -1,4 +1,3 @@
-
 function MakePrimedFan(G,d,v,x0,alpha)
   F := <alpha,v,[x0]>;
   k := 0;
@@ -58,15 +57,16 @@ procedure ActivateCFan(~G,d,F)
         w := 1;
         FlipABPath(~G, v, beta, alpha,~w);
         
-        if w ne "x_j-1" then
+        // if w ne x_j-1
+        if w ne F[3][j] then
             // Shift F from x_j-1
             ShiftFan(~G,F,j-1);
             // color vx_j-1 by beta
-            AssignLabel(~G, EdgeSet(G) ! {v, F[3][j]});
+            AssignLabel(~G, EdgeSet(G) ! {v, F[3][j]},beta);
         else 
             // Shift F from x_k
             ShiftFan(~G,F,k);
-            AssignLabel(~G, EdgeSet(G) ! {v, F[3][k+1]});
+            AssignLabel(~G, EdgeSet(G) ! {v, F[3][k+1]},beta);
         end if;
     end if;
 end procedure;
@@ -142,14 +142,23 @@ function EulerPartition(G)
 end function;
 
 
-function RandomEulerColorRec(G, d, Colors)
-
+function RandomEulerColorRec(G, d, Colors, trace)
+  print("=============================");
+  print("ENTERING trace:");
+  print(trace);
+  print("------------------------------");
   // Base case
   if d le 1 then
+      print("Base case");
       color := Colors[1];
       for e in EdgeSet(G) do
         AssignLabel(~G,e,color);  
       end for;
+      print("=============================");
+      print("LEAVING trace:");
+      print(trace);  
+      print("WITH LABELS:");
+      PrintGraphLabels(G);
       return G;
   end if;
 
@@ -160,18 +169,47 @@ function RandomEulerColorRec(G, d, Colors)
   d1 := Maxdeg(G1);
   d2 := Maxdeg(G2);
   Colors1 := Colors[1..Ceiling(d/2)+1];
-  Colors2 := Colors[Ceiling(d/2)+2..#Colors];
-  if #Colors2 lt Ceiling(d/2)+1 then
-    Append(~Colors2, Maximum(Colors1)+#Colors2+1);
-  end if;
-  G1 := RandomEulerColorRec(G1, d1, Colors1);
-  G2 := RandomEulerColorRec(G2, d2, Colors2);
+  Colors2 := Colors[1..Ceiling(d/2)+1];
+  print("First recursive call:");
+  print(G1);
+  print(d1);
+  print(Colors1);
+  print("------------------------------");
+  print("Second recursive call:");
+  print(G2);
+  print(d2);
+  print(Colors2);
   
+
+  G1 := RandomEulerColorRec(G1, d1, Colors1,trace * "L");
+  G2 := RandomEulerColorRec(G2, d2, Colors2,trace * "R");
+  
+  // Make sure that colour sets are disjoint 
+  G1Colors := { Label(e) : e in EdgeSet(G1) }; 
+  G2Colors := { Label(e) : e in EdgeSet(G2) };
+  common := Setseq(G1Colors meet G2Colors);
+  freeColors := Setseq({1..2 * (Ceiling(d/2)+1)} diff (G1Colors join G2Colors));
+  
+  // Compute a mapping of labels 
+  // The index of the next assignable free colour
+  ix := 1;
+  labelMapGraph := {};
+  for c in G2Colors do
+    if c in common then
+      Include(~labelMapGraph, <c,freeColors[ix]>);
+      ix := ix + 1;
+    else
+      Include(~labelMapGraph, <c,freeColors[ix]>);
+    end if;
+  end for;
+
+  labelMap := map<G2Colors -> {1..2 * (Ceiling(d/2)+1)} | labelMapGraph>;
+
   for e in EdgeSet(G1) do
     AssignLabel(~G,e,Label(e));
   end for;
   for e in EdgeSet(G2) do
-    AssignLabel(~G,e,Label(e));
+    AssignLabel(~G,e,labelMap(Label(e)));
   end for;
 
   Colors0 := Sort(EdgeLabels(G));
@@ -206,27 +244,34 @@ function RandomEulerColorRec(G, d, Colors)
     RandomColorOne(~G, d);
     l := #[e : e in EdgeSet(G) | not IsLabelled(e)];
   end while;
-
+  /*
   print("=============================================");
   print(G);
   print(d);
   print(Colors);
   PrintGraphLabels(G);
-
+  */
+  print("=============================");
+  print("LEAVING trace:");
+  print(trace);  
+  print("WITH LABELS:");
+  PrintGraphLabels(G);
   return G;
 end function;
 
 
 function RandomEulerColor(G)
   d := Maxdeg(G);
-  return RandomEulerColorRec(G, d, [1..d+1]);
+  return RandomEulerColorRec(G, d, [1..d+1],"");
 end function;
 
 
 // Test1
-G0 := CompleteGraph(6);
+d := 6;
+G0 := CompleteGraph(10);
 G0_col := RandomEulerColor(G0);
 assert IsEdgeColored(G0_col);
+assert NumberOfColours(G0_col) le d+1;
 
 // Test2
 
