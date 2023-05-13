@@ -34,19 +34,7 @@ function IsEdgeColored(G)
   return true;
 end function;
 
-// Calculate missing colors at vertex
-// This should be stored, not always calculated
-// Assumes d+1 colors
-function M(G,d,v) 
-  E := IncidentEdges(v);
-  Mv := {1..d+1};
-  for e in E do
-    if IsLabelled(e) then
-      Exclude(~Mv, Label(e));
-    end if;
-  end for;
-  return Mv;
-end function;
+
 
 function EulerPartition(G)
   N := #VertexSet(G);
@@ -167,7 +155,7 @@ function GreedyEulerColorRec(G, d, Colors)
     if not IsLabelled(e) then
       print("Repairing edge: ");
       print(e);
-      vs := Setseq(EndVertices(e));
+      vs := Setseq(EndVertices(e));template.
       v1 := vs[1];
       cols1 := [];
       for e1 in IncidentEdges(v1) do

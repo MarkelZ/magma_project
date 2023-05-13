@@ -52,7 +52,7 @@ end function;
 // v has an alpha-edge
 // w is the endpoint
 // we might have to check for infinite looping,
-// if this can run on cycles. I think it cannot.
+// if this can run on cycles. I think it cannot.  
 procedure FlipABPath(~G, v, alpha, beta, ~w)
   currentVertex := v;
   hasNext := true;
