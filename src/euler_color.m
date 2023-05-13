@@ -1,12 +1,12 @@
 
-function MakePrimedFan(G,v,x0,alpha)
+function MakePrimedFan(G,d,v,x0,alpha)
   F := <alpha,v,[x0]>;
   k := 0;
   primedF := false;
   
   while not primedF do
-    beta := Random(M(F[3][k+1]));
-    if beta in M(v) then
+    beta := Random(M(G, d, F[3][k+1]));
+    if beta in M(G, d, v) then
       Append(~F, beta);
       primedF := true;
     else
@@ -34,16 +34,16 @@ procedure ShiftFan(~G,F,k)
     for i in [1 .. k] do
         AssignLabel(~G, E ! {v,F[3][i]}, Label(E ! {v,F[3][i+1]}));
     end for;
-    DeleteLabel(~G, E ! {v,F[3][k+2]});
+    DeleteLabel(~G, E ! {v,F[3][k+1]});
 end procedure;
 
 // F is of the form <alpha, v, [x_0,...,x_k],beta>
 procedure ActivateCFan(~G,d,F)
     alpha := F[1];
     v := F[2];
-    k := #F[3]+1;
+    k := #F[3]-1;
     beta := F[4];
-    if beta in M(v) then
+    if beta in M(G, d, v) then
         // shift F from x_k
         ShiftFan(~G,F,k);
         // color vx_k by beta
@@ -71,16 +71,183 @@ procedure ActivateCFan(~G,d,F)
     end if;
 end procedure;
 
-function ColorOne(G, d)
+procedure RandomColorOne(~G, d)
   // choose uncolored edge vx_0
   e := Random([e : e in EdgeSet(G) | not IsLabelled(e) ]);
 
   v := InitialVertex(e);
   x0 := TerminalVertex(e);
   // Choose any \alpha \in M(v)
-  alpha := Random(M(v));
+  alpha := Random(M(G,d,v));
 
-  F := MakePrimedFan(G,v,x0,alpha);
+  F := MakePrimedFan(G,d,v,x0,alpha);
   
-  ActivateCFan(F);
+  ActivateCFan(~G, d, F);
+end procedure;
+
+function EulerPartition(G)
+  N := #VertexSet(G);
+  G1 := EmptyGraph(N);
+  G2 := EmptyGraph(N);
+  E := EdgeSet(G);
+  E1 := {}; 
+  E2 := {};
+  flag := 1;
+  while #E gt 0 do
+    e := Random(E);
+    vs := Setseq(EndVertices(e));
+    v1 := vs[1];
+    v2 := vs[2];
+    walk := [e];
+    RemoveEdge(~G,e);
+    E := EdgeSet(G);
+    // Workaround solution to an "annoying consequence of the implementation" 
+    v1 := VertexSet(G) ! Index(v1);
+    while Degree(v1) ne 0 do
+      e := Random(IncidentEdges(v1));
+      v1 := Random(Exclude(EndVertices(e),v1));      
+      Append(~walk, e);
+      RemoveEdge(~G,e);
+      E := EdgeSet(G);
+      // Workaround solution to an "annoying consequence of the implementation" 
+      v1 := VertexSet(G) ! Index(v1);
+    end while;
+
+    // Workaround solution to an "annoying consequence of the implementation" 
+    v2 := VertexSet(G) ! Index(v2);
+    while Degree(v2) ne 0 do
+      e := Random(IncidentEdges(v2));
+      v2 := Random(Exclude(EndVertices(e),v2));
+      Insert(~walk, 1, e);
+      RemoveEdge(~G,e);
+      E := EdgeSet(G);
+      // Workaround solution to an "annoying consequence of the implementation" 
+      v2 := VertexSet(G) ! Index(v2);
+    end while;
+    for e in walk do
+      vs := Setseq(EndVertices(e));
+      v1 := vs[1];
+      v2 := vs[2];
+      if flag eq 1 then
+        AddEdge(~G1, v1, v2);
+        flag := 2;
+      else
+        AddEdge(~G2, v1, v2);
+        flag := 1;
+      end if;
+    end for; 
+  end while;  
+
+  return G1,G2;
 end function;
+
+
+function RandomEulerColorRec(G, d, Colors)
+
+  // Base case
+  if d le 1 then
+      color := Colors[1];
+      for e in EdgeSet(G) do
+        AssignLabel(~G,e,color);  
+      end for;
+      return G;
+  end if;
+
+  // Partition
+  G1,G2 := EulerPartition(G);
+  
+  // Recurse
+  d1 := Maxdeg(G1);
+  d2 := Maxdeg(G2);
+  Colors1 := Colors[1..Ceiling(d/2)+1];
+  Colors2 := Colors[Ceiling(d/2)+2..#Colors];
+  if #Colors2 lt Ceiling(d/2)+1 then
+    Append(~Colors2, Maximum(Colors1)+#Colors2+1);
+  end if;
+  G1 := RandomEulerColorRec(G1, d1, Colors1);
+  G2 := RandomEulerColorRec(G2, d2, Colors2);
+  
+  for e in EdgeSet(G1) do
+    AssignLabel(~G,e,Label(e));
+  end for;
+  for e in EdgeSet(G2) do
+    AssignLabel(~G,e,Label(e));
+  end for;
+
+  Colors0 := Sort(EdgeLabels(G));
+  Colors := [];
+
+  i := 1;
+  while i le #Colors0 do
+    cAct := Colors0[i];
+    n := 0;
+    while i le #Colors0 and Colors0[i] eq cAct do
+      n := n+1;
+      i := i + 1;
+    end while;
+    Append(~Colors,[n,i]);
+  end while;
+  Sort(~Colors,func<x,y | x[2] - y[2]>); 
+  while #Colors gt d+1 do
+    c := Colors[1][1];
+    Remove(~Colors,1);
+    for e in EdgeSet(G) do 
+      if IsLabelled(e) then
+        if Label(e) eq c then
+          DeleteLabel(~G,e);
+        end if;
+      end if;
+    end for;
+  end while;
+
+  // Repair
+  l := #[e : e in EdgeSet(G) | not IsLabelled(e)];
+  while l gt 0 do
+    RandomColorOne(~G, d);
+    l := #[e : e in EdgeSet(G) | not IsLabelled(e)];
+  end while;
+
+  print("=============================================");
+  print(G);
+  print(d);
+  print(Colors);
+  PrintGraphLabels(G);
+
+  return G;
+end function;
+
+
+function RandomEulerColor(G)
+  d := Maxdeg(G);
+  return RandomEulerColorRec(G, d, [1..d+1]);
+end function;
+
+
+// Test1
+G0 := CompleteGraph(6);
+G0_col := RandomEulerColor(G0);
+assert IsEdgeColored(G0_col);
+
+// Test2
+
+// function TestRandomGraphs(nvertices, ntests)
+//   for i := 1 to ntests do
+//     GR := RandomGraph(nvertices, 0.75);
+//     GR_col := RandomEulerColor(GR);
+//     if not IsEdgeColored(G0_col) then
+//       return false, GR_col;
+//     end if;
+//   end for;
+//   return true, EmptyGraph(0);
+// end function;
+
+
+// succ, GERR := TestRandomGraphs(16, 100);
+// if succ then
+//   print("All tests successful!");
+// else
+//   print("Graph colored wrong");
+//   print(GERR);
+// end if;
+
+

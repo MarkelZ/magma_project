@@ -1,7 +1,11 @@
 procedure PrintGraphLabels(G) 
   for e in EdgeSet(G) do
     print(e);
-    print(Label(e));
+    if IsLabelled(e) then
+      print(Label(e));
+    else
+      print("Unlabeled");
+    end if;
   end for;
 end procedure;
 
