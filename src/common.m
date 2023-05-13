@@ -33,3 +33,17 @@ function IsEdgeColored(G)
   // If no colors repeat return true
   return true;
 end function;
+
+// Calculate missing colors at vertex
+// This should be stored, not always calculated
+// Assumes d+1 colors
+function M(G,d,v) 
+  E := IncidentEdges(v);
+  Mv := {1..d+1};
+  for e in E do
+    if IsLabelled(e) then
+      Exclude(~Mv, Label(e));
+    end if;
+  end for;
+  return Mv;
+end function;
