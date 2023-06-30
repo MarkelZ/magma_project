@@ -82,6 +82,7 @@ procedure FlipABPath(~G, v, alpha, beta, ~w)
       else
         nextColour := alpha;
       end if;
+      AssignLabel(~G, e, nextColour);
     end if;
   end while;
 

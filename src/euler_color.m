@@ -239,6 +239,25 @@ function RandomEulerColorRec(G, d, Colors, trace)
       end if;
     end for;
   end while;
+
+  // Fix color indices
+  col_vec:= [];
+  for elem in Colors do
+    Append(~col_vec, elem[1]);
+  end for;
+
+  for e in EdgeSet(G) do
+    if IsLabelled(e) then
+      k := Label(e);
+      AssignLabel(~G, e, Index(col_vec, k));
+    end if;
+  end for;
+
+  for i := 1 to #Colors do
+    k := Colors[i][1];
+    Colors[i][1] := Index(col_vec, k);
+  end for;
+
   //print(d);
   //print(Colors);
   //PrintGraphLabels(G);
@@ -249,6 +268,7 @@ function RandomEulerColorRec(G, d, Colors, trace)
     RandomColorOne(~G, d);
     l := #[e : e in EdgeSet(G) | not IsLabelled(e)];
   end while;
+
   /*
   print("=============================================");
   print(G);
