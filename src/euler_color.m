@@ -143,22 +143,22 @@ end function;
 
 
 function RandomEulerColorRec(G, d, Colors, trace)
-  print("=============================");
-  print("ENTERING trace:");
-  print(trace);
-  print("------------------------------");
+  //print("=============================");
+  //print("ENTERING trace:");
+  //print(trace);
+  //print("------------------------------");
   // Base case
   if d le 1 then
-      print("Base case");
+      //print("Base case");
       color := Colors[1];
       for e in EdgeSet(G) do
         AssignLabel(~G,e,color);  
       end for;
-      print("=============================");
-      print("LEAVING trace:");
-      print(trace);  
-      print("WITH LABELS:");
-      PrintGraphLabels(G);
+      //print("=============================");
+      //print("LEAVING trace:");
+      //print(trace);  
+      //print("WITH LABELS:");
+      //PrintGraphLabels(G);
       return G;
   end if;
 
@@ -170,15 +170,15 @@ function RandomEulerColorRec(G, d, Colors, trace)
   d2 := Maxdeg(G2);
   Colors1 := Colors[1..Ceiling(d/2)+1];
   Colors2 := Colors[1..Ceiling(d/2)+1];
-  print("First recursive call:");
-  print(G1);
-  print(d1);
-  print(Colors1);
-  print("------------------------------");
-  print("Second recursive call:");
-  print(G2);
-  print(d2);
-  print(Colors2);
+  //print("First recursive call:");
+  //print(G1);
+  //print(d1);
+  //print(Colors1);
+  //print("------------------------------");
+  //print("Second recursive call:");
+  //print(G2);
+  //print(d2);
+  //print(Colors2);
   
 
   G1 := RandomEulerColorRec(G1, d1, Colors1,trace * "L");
@@ -223,9 +223,11 @@ function RandomEulerColorRec(G, d, Colors, trace)
       n := n+1;
       i := i + 1;
     end while;
-    Append(~Colors,[n,i]);
+    Append(~Colors,[cAct,n]);
   end while;
-  Sort(~Colors,func<x,y | x[2] - y[2]>); 
+  Sort(~Colors,func<x,y | x[2] - y[2]>);
+  //print("==========================");
+  //print(Colors);
   while #Colors gt d+1 do
     c := Colors[1][1];
     Remove(~Colors,1);
@@ -237,6 +239,9 @@ function RandomEulerColorRec(G, d, Colors, trace)
       end if;
     end for;
   end while;
+  //print(d);
+  //print(Colors);
+  //PrintGraphLabels(G);
 
   // Repair
   l := #[e : e in EdgeSet(G) | not IsLabelled(e)];
@@ -251,27 +256,34 @@ function RandomEulerColorRec(G, d, Colors, trace)
   print(Colors);
   PrintGraphLabels(G);
   */
+  /*
   print("=============================");
   print("LEAVING trace:");
   print(trace);  
   print("WITH LABELS:");
   PrintGraphLabels(G);
+  */
   return G;
 end function;
 
 
 function RandomEulerColor(G)
   d := Maxdeg(G);
+  print(d);
   return RandomEulerColorRec(G, d, [1..d+1],"");
 end function;
 
 
-// Test1
-d := 6;
-G0 := CompleteGraph(10);
+// Test1  
+n := 6;
+G0 := CompleteGraph(n);
 G0_col := RandomEulerColor(G0);
+print("\n\n");
+PrintGraphLabels(G0_col);
 assert IsEdgeColored(G0_col);
-assert NumberOfColours(G0_col) le d+1;
+assert NumberOfColours(G0_col) le n;
+
+
 
 // Test2
 
