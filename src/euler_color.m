@@ -295,7 +295,7 @@ end function;
 
 
 // Test1  
-n := 6;
+n := 16;
 G0 := CompleteGraph(n);
 G0_col := RandomEulerColor(G0);
 print("\n\n");
@@ -307,24 +307,24 @@ assert NumberOfColours(G0_col) le n;
 
 // Test2
 
-// function TestRandomGraphs(nvertices, ntests)
-//   for i := 1 to ntests do
-//     GR := RandomGraph(nvertices, 0.75);
-//     GR_col := RandomEulerColor(GR);
-//     if not IsEdgeColored(G0_col) then
-//       return false, GR_col;
-//     end if;
-//   end for;
-//   return true, EmptyGraph(0);
-// end function;
+function TestRandomGraphs(nvertices, ntests)
+  for i := 1 to ntests do
+    GR := RandomGraph(nvertices, 0.75);
+    GR_col := RandomEulerColor(GR);
+    if not IsEdgeColored(G0_col) then
+      return false, GR_col;
+    end if;
+  end for;
+  return true, EmptyGraph(0);
+end function;
 
 
-// succ, GERR := TestRandomGraphs(16, 100);
-// if succ then
-//   print("All tests successful!");
-// else
-//   print("Graph colored wrong");
-//   print(GERR);
-// end if;
+succ, GERR := TestRandomGraphs(16, 100);
+if succ then
+  print("All tests successful!");
+else
+  print("Graph colored wrong");
+  print(GERR);
+end if;
 
 
