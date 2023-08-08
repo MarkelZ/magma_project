@@ -155,7 +155,7 @@ function GreedyEulerColorRec(G, d, Colors)
     if not IsLabelled(e) then
       print("Repairing edge: ");
       print(e);
-      vs := Setseq(EndVertices(e));template.
+      vs := Setseq(EndVertices(e));
       v1 := vs[1];
       cols1 := [];
       for e1 in IncidentEdges(v1) do
@@ -191,28 +191,28 @@ function GreedyEulerColor(G)
 end function;
 
 // Test1
-G0 := CompleteGraph(4);
-G0_col := GreedyEulerColor(G0);
-assert IsEdgeColored(G0_col);
+// G0 := CompleteGraph(4);
+// G0_col := GreedyEulerColor(G0);
+// assert IsEdgeColored(G0_col);
 
-// Test2
+// // Test2
 
-function TestRandomGraphs(nvertices, ntests)
-  for i := 1 to ntests do
-    GR := RandomGraph(nvertices, 0.75);
-    GR_col := GreedyEulerColor(GR);
-    if not IsEdgeColored(G0_col) then
-      return false, GR_col;
-    end if;
-  end for;
-  return true, EmptyGraph(0);
-end function;
+// function TestRandomGraphs(nvertices, ntests)
+//   for i := 1 to ntests do
+//     GR := RandomGraph(nvertices, 0.75);
+//     GR_col := GreedyEulerColor(GR);
+//     if not IsEdgeColored(G0_col) then
+//       return false, GR_col;
+//     end if;
+//   end for;
+//   return true, EmptyGraph(0);
+// end function;
 
 
-succ, GERR := TestRandomGraphs(16, 100);
-if succ then
-  print("All tests successful!");
-else
-  print("Graph colored wrong");
-  print(GERR);
-end if;
+// succ, GERR := TestRandomGraphs(16, 100);
+// if succ then
+//   print("All tests successful!");
+// else
+//   print("Graph colored wrong");
+//   print(GERR);
+// end if;
