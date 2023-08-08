@@ -34,19 +34,21 @@ for density in densities do
         t0 := Cputime();
         GR_col := RandomEulerColor(GR);
         dt := Cputime(t0);
-        accum := accum + dt;
         catch e
-            printf "%3o ", "ooopsie";
+            printf "%3o ", "x";
             continue;
         end try; 
 
+
         if not IsEdgeColored(GR_col) then
-            printf "%3o ", "rly bad oopsie";
+            printf "%3o ", "y";
             continue;
         end if;
 
+        accum := accum + dt;
         i := i + 1;
-        printf "%3o ", i;
+        printf "Iter: %3o ", i;
+        printf "Avg: %3o ", (1000*accum) / i;
     end while;
 
     avg := accum / nsamples;
