@@ -101,7 +101,7 @@ function EulerPartition(G)
     walk := [e];
     RemoveEdge(~G,e);
     E := EdgeSet(G);
-    // Workaround solution to an "annoying consequence of the implementation" 
+
     v1 := VertexSet(G) ! Index(v1);
     while Degree(v1) ne 0 do
       e := Random(IncidentEdges(v1));
@@ -109,11 +109,10 @@ function EulerPartition(G)
       Append(~walk, e);
       RemoveEdge(~G,e);
       E := EdgeSet(G);
-      // Workaround solution to an "annoying consequence of the implementation" 
+
       v1 := VertexSet(G) ! Index(v1);
     end while;
 
-    // Workaround solution to an "annoying consequence of the implementation" 
     v2 := VertexSet(G) ! Index(v2);
     while Degree(v2) ne 0 do
       e := Random(IncidentEdges(v2));
@@ -121,7 +120,6 @@ function EulerPartition(G)
       Insert(~walk, 1, e);
       RemoveEdge(~G,e);
       E := EdgeSet(G);
-      // Workaround solution to an "annoying consequence of the implementation" 
       v2 := VertexSet(G) ! Index(v2);
     end while;
     for e in walk do
